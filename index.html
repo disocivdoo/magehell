@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcane Bullet: Ascension</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="main-ui" class="ui">
+        <div class="flex justify-between items-start">
+            <div class="flex flex-col gap-2">
+                <div class="panel-fantasy p-3 min-w-[180px]">
+                    <div class="text-[10px] uppercase text-red-400 mb-2 font-bold">Esencia Vital</div>
+                    <div id="hp-container" class="flex gap-1 flex-wrap max-w-[160px]"></div>
+                    <div class="hidable transition-opacity duration-300">
+                        <div class="mt-3 flex items-center justify-between">
+                            <span class="text-[10px] uppercase text-yellow-500 font-bold">Oro</span>
+                            <div class="flex items-center gap-1"><span id="coin-count" class="text-sm font-bold text-yellow-400">0</span><span class="text-xs text-yellow-600">g</span></div>
+                        </div>
+                        <div class="mt-4 text-[10px] uppercase text-indigo-400 font-bold">Reliquias</div>
+                        <div id="item-list" class="flex gap-1 mt-1 flex-wrap max-w-[200px] min-h-[28px]"></div>
+                    </div>
+                </div>
+                <div class="panel-fantasy p-3 flex flex-col gap-1 hidable transition-opacity duration-300">
+                    <div class="flex justify-between items-center"><span class="stat-label">Poder:</span><span id="stat-damage" class="stat-value">1.0</span></div>
+                    <div class="flex justify-between items-center"><span class="stat-label">Conjuros:</span><span id="stat-firerate" class="stat-value">1.0</span></div>
+                    <div class="flex justify-between items-center"><span class="stat-label">Agilidad:</span><span id="stat-speed" class="stat-value">5.5</span></div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-end gap-2 hidable transition-opacity duration-300">
+                <div id="minimap" class="minimap-grid"></div>
+                <div class="text-right text-[10px] text-[#b2945e] font-bold" id="room-info">PISO 1</div>
+                <div id="focus-indicator" class="hidden text-indigo-300 text-[10px] font-bold animate-pulse bg-indigo-900/40 px-2 py-1 border border-indigo-500/30 rounded">MODO PRECISIÓN</div>
+                <div class="text-[9px] text-gray-500 font-mono mt-1 space-y-1"><p>[H] HUD | [M] MAPA</p></div>
+            </div>
+        </div>
+
+        <div id="overlay-screen" class="interactive absolute inset-0 flex items-center justify-center bg-black/90">
+            
+            <div id="start-content" class="text-center">
+                <h1 class="text-6xl font-black mb-1 tracking-tighter text-[#b2945e] drop-shadow-[0_0_10px_rgba(178,148,94,0.5)]">ARCANE BULLET</h1>
+                <p class="text-xs tracking-[0.4em] mb-10 text-indigo-400">ASCENSIÓN</p>
+                <div class="panel-fantasy p-5 mb-8 text-left text-xs space-y-3 max-w-xs mx-auto">
+                    <p><span class="text-indigo-400 font-bold">WASD:</span> Moverse</p>
+                    <p><span class="text-indigo-400 font-bold">RATÓN:</span> Apuntar</p>
+                    <p><span class="text-indigo-400 font-bold">SHIFT:</span> Precisión</p>
+                </div>
+                <button onclick="initGame()" class="px-10 py-4 bg-[#b2945e] hover:bg-[#d4b478] text-black font-black uppercase tracking-widest rounded shadow-[0_0_20px_rgba(178,148,94,0.3)] transition-all transform hover:scale-105">INICIAR VIAJE</button>
+            </div>
+
+            <div id="item-popup" class="hidden text-center bg-indigo-950/40 p-8 rounded-xl border-2 border-[#b2945e] backdrop-blur-md max-w-sm transition-colors duration-300">
+                <p id="item-tier" class="text-[10px] font-bold tracking-[0.3em] uppercase mb-2">RAREZA</p>
+                <div id="item-icon" class="text-6xl mb-4 drop-shadow-[0_0_10px_white]">💎</div>
+                <h2 id="item-name" class="text-3xl font-black text-white mb-2 font-serif">NOMBRE</h2>
+                <p id="item-desc" class="text-sm text-indigo-200 opacity-90 mb-8 italic">Descripción</p>
+                <button onclick="closeItemPopup()" class="text-xs uppercase font-bold tracking-widest text-black bg-[#b2945e] px-6 py-3 hover:bg-white transition-colors">VINCULAR</button>
+            </div>
+
+            <div id="death-screen" class="hidden text-center">
+                <h2 class="text-5xl font-black text-red-600 mb-4 drop-shadow-[0_0_15px_black]">ALMA CONSUMIDA</h2>
+                <button onclick="initGame()" class="px-8 py-3 border-2 border-[#b2945e] text-[#b2945e] font-bold hover:bg-[#b2945e] hover:text-black transition-all">REINTENTAR</button>
+            </div>
+
+            <div id="win-screen" class="hidden text-center">
+                <h2 class="text-5xl font-black text-yellow-400 mb-4 drop-shadow-[0_0_15px_gold]">ASCENSIÓN COMPLETA</h2>
+                <p class="text-[#b2945e] mb-8">Has dominado el Vacío.</p>
+                <button onclick="initGame()" class="px-8 py-3 border-2 border-yellow-500 text-yellow-500 font-bold hover:bg-yellow-500 hover:text-black transition-all">NUEVA VIDA</button>
+            </div>
+
+            <div id="pause-screen" class="hidden flex flex-col items-center justify-center w-full h-full bg-black/95 absolute inset-0 z-50">
+                <h2 class="text-6xl font-black text-[#b2945e] mb-2 tracking-[0.2em] drop-shadow-[0_0_15px_rgba(178,148,94,0.5)]">PAUSA</h2>
+                <div class="h-1 w-32 bg-[#b2945e] mb-10 shadow-[0_0_10px_#b2945e]"></div>
+                <div class="flex flex-col gap-6 w-64">
+                    <button onclick="togglePause()" class="px-8 py-4 border-2 border-[#b2945e] text-[#b2945e] font-bold hover:bg-[#b2945e] hover:text-black transition-all uppercase tracking-widest text-sm">Continuar</button>
+                    <button onclick="initGame()" class="px-8 py-4 border-2 border-red-900 text-red-500 font-bold hover:bg-red-900 hover:text-white transition-all uppercase tracking-widest text-sm">Abandonar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="room-clear" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-1000">
+            <h2 class="text-3xl font-bold italic tracking-[0.5em] text-[#b2945e]/30 uppercase">PURIFICADO</h2>
+        </div>
+        
+        <div id="floor-intro" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 bg-black z-50 transition-opacity duration-300">
+             <div class="text-center">
+                <h2 id="floor-title" class="text-4xl font-black text-[#b2945e] mb-2 tracking-widest">PISO 1</h2>
+                <p id="floor-subtitle" class="text-sm text-indigo-400 uppercase tracking-[0.3em]">Las Catacumbas</p>
+             </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="js/items.js"></script>
+    <script src="js/projectiles.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
